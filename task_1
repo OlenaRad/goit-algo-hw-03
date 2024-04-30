@@ -1,0 +1,59 @@
+import os
+import shutil
+import sys
+
+def copy_and_organize_files(source_dir, dest_dir):
+    # Переконатися, що директорія призначення існує
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+
+    for root, dirs, files in os.walk(source_dir):
+        for file in files:
+            # Отримати повний шлях до поточного файлу
+            source_file_path = os.path.join(root, file)
+            # Отримати розширення файлу
+            _, extension = os.path.splitext(file)
+            # Створити піддиректорію за розширенням, якщо ще не існує
+            dest_sub_dir = os.path.join(dest_dir, extension[1:])
+            if not os.path.exists(dest_sub_dir):
+                os.makedirs(dest_sub_dir)
+            # Створити повний шлях до файлу призначення
+            dest_file_path = os.path.join(dest_sub_dir, file)
+            try:
+                # Скопіювати файл
+                shutil.copy(source_file_path, dest_file_path)
+                print(f"Копіювання {source_file_path} до {dest_file_path}")
+            except Exception as e:
+                print(f"Помилка при копіюванні {source_file_path}: {e}")
+
+def recursive_read_directory(directory):
+    try:
+        for root, dirs, files in os.walk(directory):
+            for dir_name in dirs:
+                recursive_read_directory(os.path.join(root, dir_name))
+        return True
+    except Exception as e:
+        print(f"Помилка при читанні директорії {directory}: {e}")
+        return False
+
+def main():
+    # Парсинг аргументів командного рядка
+    if len(sys.argv) < 2:
+        print("Не вказано шлях до вихідної директорії.")
+        return
+    source_directory = sys.argv[1]
+
+    if len(sys.argv) < 3:
+        destination_directory = "dist"
+    else:
+        destination_directory = sys.argv[2]
+
+    # Рекурсивне читання директорій
+    if not recursive_read_directory(source_directory):
+        return
+
+    # Копіювання та організація файлів
+    copy_and_organize_files(source_directory, destination_directory)
+
+if __name__ == "__main__":
+    main()
